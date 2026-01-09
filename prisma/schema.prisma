@@ -1,0 +1,90 @@
+// הגדרות כלליות של Prisma
+generator client {
+  provider = "prisma-client-js" // מייצר את ה-Client שמאפשר לנו לכתוב שאילתות ב-JS/TS
+}
+
+// חיבור לבסיס הנתונים
+datasource db {
+  provider = "postgresql"      // סוג בסיס הנתונים (PostgreSQL)
+  url      = env("DATABASE_URL") // כתובת החיבור נלקחת מקובץ ה-.env
+}
+
+// מודל משתמש (User)
+model User {
+  id            String    @id @default(cuid()) // מזהה ייחודי, נוצר אוטומטית בפורמט cuid
+  name          String?   // שם המשתמש (סימן השאלה אומר שזה שדה אופציונלי)
+  email         String    @unique             // אימייל ייחודי (אי אפשר להירשם פעמיים עם אותו מייל)
+  emailVerified DateTime? // תאריך אימות אימייל (אופציונלי)
+  image         String?   // קישור לתמונת פרופיל (אופציונלי)
+  password      String?   // סיסמה מוצפנת (אופציונלי, למקרה של התחברות דרך גוגל למשל)
+  role          Role      @default(USER)      // תפקיד המשתמש, ברירת מחדל היא USER
+  
+  // יחסים (Relations)
+  posts         Post[]    // רשימת הפוסטים שהמשתמש כתב (מערך)
+  products      Product[] // רשימת המוצרים שהמשתמש יצר (מערך)
+  
+  // שדות זמן אוטומטיים
+  createdAt     DateTime  @default(now())     // תאריך יצירה - נקבע אוטומטית לרגע הנוכחי
+  updatedAt     DateTime  @updatedAt          // תאריך עדכון - מתעדכן אוטומטית בכל שינוי בשורה
+
+  @@index([email]) // יצירת אינדקס על האימייל לחיפוש מהיר יותר
+}
+
+// מודל פוסט (Post)
+model Post {
+  id          String   @id @default(cuid())   // מזהה ייחודי
+  title       String                           // כותרת הפוסט
+  content     String?  @db.Text                // תוכן הפוסט (סוג Text מאפשר טקסט ארוך מאוד)
+  published   Boolean  @default(false)         // האם פורסם (ברירת מחדל: לא)
+  
+  // קשר למשתמש
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String   // המזהה של המשתמש שכתב את הפוסט (Foreign Key)
+  
+  createdAt   DateTime @default(now())         // תאריך יצירה
+  updatedAt   DateTime @updatedAt              // תאריך עדכון
+
+  @@index([authorId]) // אינדקס לשיפור ביצועים בשליפת פוסטים לפי משתמש
+}
+
+// מודל מוצר (Product)
+model Product {
+  id          String   @id @default(cuid())   // מזהה ייחודי
+  name        String                           // שם המוצר
+  description String?  @db.Text                // תיאור המוצר
+  price       Float                            // מחיר (מספר עשרוני)
+  image       String?                          // קישור לתמונת מוצר
+  stock       Int      @default(0)             // כמות במלאי (מספר שלם, ברירת מחדל 0)
+  sku         String?  @unique                 // מק"ט ייחודי למוצר
+  isActive    Boolean  @default(true)          // האם המוצר פעיל למכירה
+  
+  // קשר לקטגוריה
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?   // מזהה הקטגוריה (אופציונלי)
+
+  // קשר למשתמש שיצר את המוצר
+  createdBy   User     @relation(fields: [userId], references: [id])
+  userId      String   // מזהה המשתמש שיצר
+  
+  createdAt   DateTime @default(now())         // תאריך יצירה
+  updatedAt   DateTime @updatedAt              // תאריך עדכון
+
+  @@index([categoryId]) // אינדקס לחיפוש מהיר לפי קטגוריה
+  @@index([userId])     // אינדקס לחיפוש מהיר לפי יוצר
+}
+
+// מודל קטגוריה (Category)
+model Category {
+  id        String    @id @default(cuid())    // מזהה ייחודי
+  name      String    @unique                 // שם הקטגוריה (חייב להיות ייחודי)
+  products  Product[]                         // רשימת המוצרים השייכים לקטגוריה
+  
+  createdAt DateTime  @default(now())         // תאריך יצירה
+  updatedAt DateTime  @updatedAt              // תאריך עדכון
+}
+
+// הגדרת סוגי תפקידים (Enum)
+enum Role {
+  USER  // משתמש רגיל
+  ADMIN // מנהל מערכת
+}
