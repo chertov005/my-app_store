@@ -1,15 +1,27 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 
 /**
  * @type {PrismaClient}
- * הקוד הזה דואג ש-VS Code יזהה את פריזמה וייתן לך השלמות אוטומטיות (IntelliSense)
  */
-const globalForPrisma = global;
+let prisma;
 
-export const prisma = globalForPrisma.prisma || new PrismaClient({
-  log: ['query'], // אופציונלי: מדפיס את השאילתות לטרמינל, עוזר מאוד בפיתוח
-})
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+};
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV === 'production') {
+  prisma = prismaClientSingleton();
+} else {
+  // בשימוש ב-globalThis בסביבת JS, אנחנו מגדירים את הטיפוס ב-JSDoc
+  if (!globalThis.prismaGlobal) {
+    globalThis.prismaGlobal = prismaClientSingleton();
+  }
+  prisma = globalThis.prismaGlobal;
+}
 
+/** * ייצוא ה-Client עם תיעוד כדי ש-VS Code יזהה את ה-Schema
+ * @type {PrismaClient} 
+ */
 export default prisma;
