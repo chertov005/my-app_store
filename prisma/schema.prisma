@@ -14,7 +14,6 @@ model User {
   id            String    @id @default(cuid()) // מזהה ייחודי, נוצר אוטומטית בפורמט cuid
   name          String?   // שם המשתמש (סימן השאלה אומר שזה שדה אופציונלי)
   email         String    @unique             // אימייל ייחודי (אי אפשר להירשם פעמיים עם אותו מייל)
-  emailVerified DateTime? // תאריך אימות אימייל (אופציונלי)
   image         String?   // קישור לתמונת פרופיל (אופציונלי)
   password      String?   // סיסמה מוצפנת (אופציונלי, למקרה של התחברות דרך גוגל למשל)
   role          Role      @default(USER)      // תפקיד המשתמש, ברירת מחדל היא USER
