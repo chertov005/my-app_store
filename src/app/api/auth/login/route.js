@@ -74,6 +74,14 @@ export async function POST (_req) {
             }
         )
 
+        const payload = {
+            userId:user.id ,
+            userRole:user.role ,
+            
+        }
+
+        const token = await jwt.sign(payload )
+
         return response
 
         
