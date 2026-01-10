@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {z} from 'zod' ;
 import bcrypt from 'bcrypt' ;
+import jwt from 'jsonwebtoken'
 
 const schemaLogin = z.object({
     email:z.string().email('אימייל שגוי').trim() ,
