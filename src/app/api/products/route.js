@@ -85,7 +85,7 @@ export async function POST(req) {
                 description,
                 price,
                 image,
-                categoryId // קישור לקטגוריה (יכול להיות null אם הגדרת אופציונלי ב-Schema)
+                categoryId // קישור לקטגוריה (יכול להיות null אם הגדרת אופציונלי ב-Sche7ma)
             }
         });
 
