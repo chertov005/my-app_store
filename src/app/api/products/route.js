@@ -19,10 +19,6 @@ const productsSchema = z.object({
 
 
 
-
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-
 export async function GET(req) {
     try {
         // שליפת כתובת ה-URL כדי להוציא ממנה פרמטרים (Query Params)
