@@ -13,7 +13,7 @@ const productsSchema = z.object({
     image: z.string().url("קישור לא תקין").optional().or(z.literal('')),
     categoryId: z.string().cuid("מזהה קטגוריה לא תקין").optional(),
 });
-s
+
 // 2. פונקציית ה-GET (בלי אימפורטים לפניה!)
 export async function GET(req) {
     try {
