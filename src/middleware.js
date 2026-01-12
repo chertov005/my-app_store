@@ -45,6 +45,9 @@ export async function middleware(req) {
             },
         });
 
+
+
+        
     } catch (error) {
         // טיפול בשגיאות (טוקן פג תוקף, טוקן מזויף או תקלת שרת)
         console.error('[Middleware Error] JWT Verification failed:', error.message);
@@ -63,7 +66,9 @@ export const config = {
     matcher: [
         
         '/api/users/:path*', '/dashboard/:path*' ,
-        '/api/users'
+        '/api/users' ,
+        '/api/posts/:path*' ,
+        '/api/posts'
 
     ], // ירוץ רק על נתיבי ה-API והדשבורד
 };

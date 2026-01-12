@@ -4,6 +4,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
 
+
 const schemaLogin = z.object({
     email: z.string().email('אימייל שגוי').trim(),
     password: z.string().min(8)
@@ -15,6 +16,9 @@ const schemaLogin = z.object({
 export async function POST(_req) {
 
     try {
+
+     
+     
         const body = await _req.json()
         const validation = schemaLogin.safeParse(body)
 
