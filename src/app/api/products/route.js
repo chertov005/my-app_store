@@ -13,8 +13,7 @@ const productsSchema = z.object({
     })
     .positive("המחיר חייב להיות גדול מ-0") // מוודא שלא יזינו מחיר שלילי
   ),
-    image: z.url( ).optional()
-    .or(z.literal('')) ,
+image: z.string().url().optional().or(z.literal('')),
 
     categoryId: z.string().cuid("מזהה קטגוריה לא תקין").optional(),
 
@@ -23,34 +22,56 @@ const productsSchema = z.object({
 
 
 
-export async function GET () {
+// הגדרת פונקציית GET אסינכרונית שמקבלת את אובייקט הבקשה (_req)
+export async function GET (_req) {
 
     try {
+        // שליפת הערך של הכותרת 'x-user-id' מהבקשה כדי לזהות את המשתמש
+        const userId =  _req.headers.get('x-user-id') 
+        
+        // בדיקה לוגית: אם לא נשלח מזהה משתמש ב-headers, אנחנו עוצרים את הפעולה
+        if(!userId) {
+            // הדפסת הודעה ללוג של השרת לצורך ניפוי שגיאות (Debug)
+            console.log('access deny , no token')
+            // החזרת תשובת שגיאה ללקוח עם סטטוס 401 (לא מורשה)
+            return NextResponse.json(
+                {
+                    message:'אין גישה לעמוד המבוקש , אין טוקן'
+                },
+                {status:401}
+            )
+        }
 
-        const products = await prisma.product.findMany({})
+        // שימוש ב-Prisma לשליפת נתונים ממסד הנתונים
+        const products = await prisma.product.findMany({
+            // פקודת include אומרת ל-Prisma להביא גם את נתוני טבלת הקטגוריה המקושרת
+            include:{
+                category:true // מחזיר אובייקט שלם של הקטגוריה במקום רק את ה-ID שלה
+            },
+            // מיון התוצאות כך שהמוצרים החדשים ביותר (לפי תאריך יצירה) יופיעו למעלה
+            orderBy:{createdAt:'desc'}
+        })
 
+        // החזרת תשובה חיובית (סטטוס 200) עם רשימת המוצרים שמצאנו
         return NextResponse.json(
             {
-                message:'success ' ,
-                data:products
-            } ,
-
-            {
-                status:200
-            }
+                message:'success ' , // הודעת טקסט לאישור שהכל עבר בהצלחה
+                data:products        // הנתונים עצמם (מערך של מוצרים)
+            },
+            {status:200}
         )
-        
+
     } catch (error) {
+        // בלוק זה ירוץ רק אם הייתה תקלה בדרך (למשל בעיה בחיבור למסד הנתונים)
         console.log('there was error 500 ')
+        // החזרת תשובה כללית ללקוח המציינת שיש שגיאת שרת פנימית
         return NextResponse.json(
             {
                 message:'internal server error 500'
             }
         )
     }
-
 }
-
 
 
 
@@ -61,7 +82,25 @@ export async function POST (_req) {
     try {
         
         const body = await _req.json() ;
+
+        // שליפת הערך של הכותרת 'x-user-id' מהבקשה כדי לזהות את המשתמש
+        const userId =  _req.headers.get('x-user-id') 
+        
+        // בדיקה לוגית: אם לא נשלח מזהה משתמש ב-headers, אנחנו עוצרים את הפעולה
+        if(!userId) {
+            // הדפסת הודעה ללוג של השרת לצורך ניפוי שגיאות (Debug)
+            console.log('access deny , no token')
+            // החזרת תשובת שגיאה ללקוח עם סטטוס 401 (לא מורשה)
+            return NextResponse.json(
+                {
+                    message:'אין גישה לעמוד המבוקש , אין טוקן'
+                },
+                {status:401}
+            )
+        }
         const validation = productsSchema.safeParse(body) 
+
+        
 
         if(!validation.success) {
 
@@ -71,6 +110,24 @@ export async function POST (_req) {
 
         const {price,name,description,image,categoryId} = validation.data
 
+        const newProduct = await  prisma.product.create({
+            data:{
+                name ,
+                price,
+                image,
+                description,
+                categoryId
+            }
+        })
+
+        return NextResponse.json(
+            {
+                message:'success add product' ,
+                data:newProduct
+            } ,
+
+            {status:201}
+        )
 
 
     } catch (error) {
