@@ -20,7 +20,6 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const categoryId = searchParams.get("categoryId");
         const filter = categoryId ? { categoryId } : {};
-
         const products = await prisma.product.findMany({
             where: filter,
             include: { category: { select: { name: true } } },
