@@ -68,7 +68,9 @@ export const config = {
         '/api/users/:path*', '/dashboard/:path*' ,
         '/api/users' ,
         '/api/posts/:path*' ,
-        '/api/posts'
+        '/api/posts' ,
+        '/api/categories',
+        '/api/categories/:path*'
 
     ], // ירוץ רק על נתיבי ה-API והדשבורד
 };
