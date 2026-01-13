@@ -14,8 +14,18 @@ const categorySchema = z.object({
 
 export async function GET () {
 
+try {
 
     
+    
+} catch (error) {
+      console.error('Category POST Error:', error)
+        return NextResponse.json(
+            { message: "שגיאת שרת פנימית" },
+            { status: 500 }
+        )
+}
+
 
 }
 
